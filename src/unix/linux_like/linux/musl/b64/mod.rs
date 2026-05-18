@@ -2,6 +2,14 @@ use crate::prelude::*;
 
 pub type regoff_t = c_long;
 
+cfg_if! {
+    if #[cfg(target_family = "cheri")] {
+        const ATTR_SIZE: usize = 15;
+    } else {
+        const ATTR_SIZE: usize = 7;
+    }
+}
+
 s! {
     // MIPS implementation is special, see the subfolder.
     #[cfg(not(target_arch = "mips64"))]
@@ -11,8 +19,9 @@ s! {
         pub ss_size: size_t,
     }
 
+    #[cfg_attr(target_family = "cheri", repr(align(16)))]
     pub struct pthread_attr_t {
-        __size: [u64; 7],
+        __size: [u64; ATTR_SIZE],
     }
 
     pub struct sigset_t {
